@@ -1,0 +1,8 @@
+def crc8(data: bytes) -> int:
+    """CRC-8, polynomial 0x07, init 0x00, no reflection, no final XOR."""
+    crc = 0
+    for b in data:
+        crc ^= b
+        for _ in range(8):
+            crc = ((crc << 1) ^ 0x07) & 0xFF if crc & 0x80 else (crc << 1) & 0xFF
+    return crc

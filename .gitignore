@@ -1,0 +1,20 @@
+# environments and caches
+.venv/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# the app's local database (created on first run)
+data/
+*.db
+
+# editors and OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# scratch
+*.log
+node_modules/

@@ -1,0 +1,8 @@
+Fonts used by SootAble (served from this folder so the app works offline)
+
+  Barlow            Copyright 2017 The Barlow Project Authors (https://github.com/jpt/barlow)
+  Barlow Condensed  Copyright 2017 The Barlow Project Authors (https://github.com/jpt/barlow)
+  IBM Plex Mono     Copyright 2017 IBM Corp. (https://github.com/IBM/plex)
+
+All three are licensed under the SIL Open Font License, Version 1.1.
+Full text: https://openfontlicense.org

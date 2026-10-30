@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+<meta name="theme-color" content="#2b2b2b">
+<meta name="color-scheme" content="dark">
+<meta name="format-detection" content="telephone=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="SootAble">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>SootAble</title>
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" href="/static/favicon.png" type="image/png">
+<link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
+<link rel="preload" href="/static/fonts/BarlowCondensed-800.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/static/fonts.css">
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<div id="stage">
+  <div id="shell">
+    <div class="statusbar" aria-hidden="true">
+      <span id="clock">9:41</span><i class="notch"></i>
+      <span class="sb-right">
+        <svg width="18" height="12" viewBox="0 0 18 12" fill="currentColor"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="5" y="5" width="3" height="7" rx="1"/><rect x="10" y="2" width="3" height="10" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1"/></svg>
+        <svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x=".5" y=".5" width="21" height="11" rx="3.5" stroke="currentColor" opacity=".5"/><rect x="2" y="2" width="16" height="8" rx="2" fill="currentColor"/><rect x="23" y="4" width="2" height="4" rx="1" fill="currentColor" opacity=".5"/></svg>
+      </span>
+    </div>
+    <div id="onboarding" hidden></div>
+    <div id="main" hidden>
+      <header class="appbar" id="appbar"></header>
+      <div class="banner" id="banner" role="status" hidden><b>No connection.</b> Trying again&hellip;</div>
+      <div class="ptr" id="ptr" aria-hidden="true"><i></i></div>
+      <main id="view" tabindex="-1"></main>
+      <nav class="tabbar" id="tabbar" aria-label="Main"></nav>
+    </div>
+    <div id="sheet" class="sheet-layer" hidden><div class="sheet-panel" role="dialog" aria-modal="true" tabindex="-1"></div></div>
+    <div id="toasts" aria-live="polite"></div>
+    <div class="boot" id="boot"><img src="/static/logo-mark.png" alt="SootAble"></div>
+  </div>
+</div>
+<script src="/static/app.js"></script>
+</body>
+</html>
