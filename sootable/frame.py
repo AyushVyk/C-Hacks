@@ -1,4 +1,9 @@
-"""Build and parse the SootAble serial frames (spec section 4)."""
+"""Build and parse the SootAble serial frames (spec section 4).
+
+Every frame is laid out the same way:  0xA5 | type | payload (little-endian) | CRC-8 of everything before it.
+The meter sends READING (one measurement), HELLO (firmware and chamber length) and END (nothing more to send);
+the phone sends SYNC (send me readings from here), ACK (got them up to here) and TRIGGER (measure now).
+"""
 import struct
 from dataclasses import dataclass
 

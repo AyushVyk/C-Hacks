@@ -1,40 +1,88 @@
 # SootAble
 
-SootAble is a phone app for a small diesel exhaust meter (target cost about Rs. 500). Once a day the meter takes a smoke
-reading on its own and sends it to the phone. The app shows the number against the legal limit, keeps up to 1000 days of
-history so slow wear shows up as a trend, and warns the owner while a worn injector or clogged filter is still a small
-repair, months before the next PUC test.
+**A low-cost diesel exhaust meter and the phone app that reads it.** The meter clips under a vehicle's tailpipe and
+measures the smoke in the exhaust once a day. The app collects those readings, tracks them over months, and warns the
+owner while a worn injector or clogged filter is still a small repair.
 
-Built for C://hacks 2026, App & Web Engineering (Advanced), **UN SDG 13: Climate Action**. Black carbon from badly
-maintained diesel engines is a short-lived climate pollutant, and catching a degrading engine early is one of the cheapest
-ways to cut it.
+C://hacks 2026 · App & Web Engineering (Advanced) · **UN SDG 13: Climate Action**
+
+| | The meter (hardware) | The app (software) |
+|---|---|---|
+| What it is | A sensor unit with a fan, a heat-resistant pipe and a car mount, about Rs. 500 in parts | A phone app with a Python backend |
+| What it does | Draws in exhaust, measures how much infrared light the smoke blocks, takes a clean-air reference | Turns readings into a smoke level, tracks the trend, forecasts, raises alerts |
+| Status | Designed in CAD, shown as a 3D simulator | Working, with a virtual meter standing in for the real one |
+| Try it | [Live 3D demo](https://ayushvyk.github.io/C-Hacks/) | [Run the app](#run-the-app) |
 
 <p>
-<img src="docs/screenshots/04-home.png" width="190" alt="Home screen">
-<img src="docs/screenshots/05-trend.png" width="190" alt="Outlook and trend">
-<img src="docs/screenshots/03-find-meter.png" width="190" alt="Pairing a meter">
-<img src="docs/screenshots/06-history.png" width="190" alt="History">
+<img src="docs/screenshots/07-hardware-demo.png" width="560" alt="The 3D meter simulator">
+</p>
+<p>
+<img src="docs/screenshots/04-home.png" width="170" alt="Home screen">
+<img src="docs/screenshots/05-trend.png" width="170" alt="Outlook and trend">
+<img src="docs/screenshots/03-find-meter.png" width="170" alt="Pairing a meter">
+<img src="docs/screenshots/06-history.png" width="170" alt="History">
 </p>
 
-## Try it
+## The problem
 
-There are two things to look at. They are separate: the app needs Python running, the hardware demo is just a web page.
+Diesel vehicles in India are checked for smoke at a Pollution Under Control (PUC) test once or twice a year. In between,
+a worn injector or a clogged air filter can quietly push smoke up for months. That is wasted fuel, more black carbon (a
+short-lived climate pollutant), and in the end a failed test and a bigger repair. Nobody sees the slow change because
+nobody measures often enough, and engines degrade slowly, so a single reading says little; a long history says a lot.
 
-### 1. The hardware demo (nothing to install)
+## The meter
 
-A 3D model of the meter, built from our CAD design. Drag to orbit, change how much smoke is in the exhaust, and watch the
-infrared sensor reading, opacity and k change, with the phone's view and the ESP32 serial log beside it.
+The meter is a short pipe fitted under the tailpipe outlet. A fan pulls exhaust through it. A CNY70 reflective infrared
+sensor sits in the pipe: it sends light across and reads how much comes back, and the beam crosses the smoke twice (2 × 26
+mm). More soot means less light returns. An ESP32 reads the sensor and sends the result to the phone over Bluetooth.
 
-**Live: https://ayushvyk.github.io/C-Hacks/**
+Each daily measurement is two steps: read the smoky air, then flush the pipe with clean air and read again as a
+reference (`i0`). The phone computes the opacity coefficient, the quantity the legal limit is written in:
 
-You can also open [hardware/index.html](hardware/index.html) straight from a clone, or start the app and go to
-`/hardware/`. The 3D library is bundled in the folder; only the fonts come from the internet.
+```
+k = −(1 / L) · ln(i / i0)        limit: 2.45 m⁻¹ (65 Hartridge units)
+```
 
-![Hardware demo](docs/screenshots/07-hardware-demo.png)
+`i` is the smoky reading, `i0` the clean-air reference and `L` the path length. Because `i0` is measured fresh every time,
+slow drift in the LED and sensor cancels out.
 
-### 2. The app
+**The meter has not been built.** It exists as a CAD model, so the [3D simulator](hardware/index.html) is how we show it:
+drag to orbit, change the smoke in the exhaust, flush the pipe, and watch the sensor reading, opacity and k change, with
+the phone's view and the ESP32's serial output beside it. It runs offline too (the 3D library is bundled), either from the
+live link above, by opening `hardware/index.html`, or at `/hardware/` when the app is running.
 
-You need Python 3.10 or newer.
+## The app
+
+- **Home** shows today's smoke level on a ruler scale with the legal limit marked, four small tiles (today, 7-day average,
+  highest, change since baseline), an outlook ("projected to reach the limit around ...") and a trend chart.
+- **Readings arrive by themselves.** The meter records once a day. The app collects them when it opens, every few minutes
+  while open, and on pull-down. Nobody takes a reading by hand.
+- **Alerts** appear only when the status changes (good, close to limit, over limit). One odd reading never raises one.
+- **Long memory, tiny footprint.** Up to 1000 days of readings (about 3 years) fit in roughly 130 KB of local storage.
+- **Several vehicles, one meter each.** Each has its own readings, baseline, alerts and meter.
+- **Private.** No account, no cloud. Everything is in a local SQLite database, with CSV export and delete-all.
+- **Behaves like a phone app.** Installable on Android and iPhone, works offline, handles notches and the Android back
+  gesture, and remembers where you were after a reload.
+
+## How the two halves connect
+
+The phone and the meter talk over Bluetooth using a small binary protocol (frames of `0xA5`, a type, a payload and a CRC-8
+checksum, sent in 20-byte chunks). Bluetooth splits, merges and corrupts frames, so the phone buffers bytes, checks every
+CRC, and tells the meter what it has saved so a reading is never lost.
+
+Since the meter does not physically exist, `sootable/device_sim.py` is a virtual one that speaks exactly that protocol
+through a simulated Bluetooth link. The app's parser, checksum and sync logic cannot tell it from hardware, so connecting
+a real meter means replacing one transport class. **The readings in the demo are generated, not measured.**
+
+```
+meter (CNY70 + ESP32) ──bytes──▶ Bluetooth link ──20-byte chunks──▶ phone session (parse, CRC, sync)
+   [virtual device today]                                                    │
+              phone UI (HTML/JS) ◀── JSON ── FastAPI ◀── analytics ◀── SQLite (local)
+```
+
+## Run the app
+
+Needs Python 3.10 or newer.
 
 ```
 git clone https://github.com/AyushVyk/C-Hacks.git
@@ -45,89 +93,57 @@ pip install -r requirements.txt
 python main.py
 ```
 
-Then open **http://127.0.0.1:8000**. It is a phone app, so on a laptop it sits inside a phone-sized frame.
+Open **http://127.0.0.1:8000**. On a laptop it shows inside a phone-sized frame. The first run adds a vehicle and looks for
+its meter; the search finds three virtual meters, and **No meter? Use demo data** loads months of example readings (a
+healthy engine or one wearing out). To try it on a real phone on the same Wi-Fi, start it with `SOOTABLE_HOST=0.0.0.0`
+(PowerShell: `$env:SOOTABLE_HOST = "0.0.0.0"`), open the address it prints, and use *Add to Home screen*.
 
-The first run walks through adding a vehicle and finding its meter. There is no physical meter yet, so the search finds
-three virtual ones; tap **No meter? Use demo data** to load a few months of example readings instead (a healthy engine or
-one that is wearing out). Everything is stored locally in `data/sootable.db`; nothing leaves the machine.
+Developer tools (hidden, not part of the product): open `/#dev`, or tap the version line in Settings five times. They run
+test scenarios such as a 1000-day wear-out, bit errors or a dropped connection, and show the raw Bluetooth bytes.
 
-To try it on a real phone on the same Wi-Fi, start it with `SOOTABLE_HOST=0.0.0.0` (PowerShell:
-`$env:SOOTABLE_HOST = "0.0.0.0"`), open the address it prints, and use *Add to Home screen*.
+## Tech and structure
 
-## What the app does
-
-- **Home** shows today's smoke level on a ruler scale with the legal limit (2.45 m⁻¹) marked, four small tiles (today,
-  7-day average, highest, change since baseline), an outlook ("projected to reach the limit around ...") and a trend chart.
-- **Readings arrive by themselves.** The meter records once a day. The app collects them when it opens, every few minutes
-  while it is open, and on pull-down. Nobody takes a reading by hand.
-- **Alerts** only appear when the status changes (good, close to limit, over limit), and a single odd reading never raises
-  one.
-- **Several vehicles, one meter each.** Tap the vehicle name at the top to add another; each has its own readings,
-  baseline, alerts and meter.
-- **History and Settings.** Readings by day, CSV export, delete-all, and the connected meter's details.
-- **Works like a phone app.** Installable on Android and iPhone, offline-capable, handles safe areas and the Android back
-  gesture, and remembers where you were after a reload.
-- **Developer tools** (hidden, not part of the product): open `/#dev`, or tap the version line in Settings five times.
-  They run test scenarios such as a 1000-day wear-out or a dropped connection and show the raw Bluetooth bytes.
-
-## About the hardware
-
-The meter exists as a CAD design and has not been built. To show the whole data path anyway, `sootable/device_sim.py` is a
-virtual device that behaves like the planned Arduino Nano + HM-10 firmware and talks to the app only through the real
-byte frames of the protocol (sync byte, CRC-8, 20-byte Bluetooth chunks). The app's parser, CRC check and sync logic
-cannot tell it from hardware, so connecting a real meter means replacing one transport class. **The readings in the demo
-are generated, not measured.**
-
-```
-virtual device ──bytes──▶ simulated Bluetooth link ──20-byte chunks──▶ phone session (parse, CRC, sync)
-                                                                              │
-              phone UI (HTML/JS) ◀── JSON ── FastAPI ◀── analytics ◀── SQLite (local)
-```
-
-The meter shines an infrared LED through the exhaust, then flushes with clean air and measures again as a reference. The
-app turns the two readings into the opacity coefficient **k = −(1 / L) · ln(i / i0)**, the quantity the legal limit is
-written in.
-
-## How it is built
-
-Python 3, FastAPI and SQLite for the logic and storage; plain HTML, CSS and JavaScript for the UI (no framework, no build
-step, charts drawn as inline SVG). The maths and alert rules are pure functions with no I/O, so they can move unchanged
-into a native app.
+Python 3, FastAPI, SQLite; plain HTML, CSS and JavaScript for the UI (no framework, no build step; charts are inline SVG);
+three.js for the 3D demo. The maths and alert rules are pure functions with no I/O, so they can move into a native app.
 
 | Path | What it is |
 |---|---|
-| `main.py` | Starts the app |
-| `sootable/` | The backend: protocol (`crc8.py`, `frame.py`), maths and rules (`k.py`, `daily.py`, `alerts.py`), storage (`store.py`), sync (`session.py`), simulator (`device_sim.py`, `link.py`, `scenarios.py`), analytics (`engine.py`), API (`server.py`) |
-| `web/` | The phone UI: `index.html`, `style.css`, `app.js`, service worker, fonts, logo and icons |
-| `hardware/` | The 3D hardware demo (also published to GitHub Pages) |
-| `tests/` | 94 automated tests |
-| `docs/PROJECT.md` | Problem, solution, challenges, limitations, future work |
-| `docs/LAUNCH.md` | How it runs on iOS and Android today and the route to the App Store and Google Play |
+| `hardware/` | The 3D meter simulator (published to GitHub Pages) |
+| `sootable/` | Backend: protocol (`crc8.py`, `frame.py`), maths and rules (`k.py`, `daily.py`, `alerts.py`), storage (`store.py`), sync (`session.py`), virtual meter (`device_sim.py`, `link.py`, `scenarios.py`), analytics (`engine.py`), API (`server.py`) |
+| `web/` | The phone UI: `index.html`, `style.css`, `app.js`, service worker, fonts, icons |
+| `tests/` | 94 automated tests (`pip install -r requirements-dev.txt`, then `python -m pytest`) |
+| `docs/` | [PROJECT.md](docs/PROJECT.md) (problem, design decisions, limits) and [LAUNCH.md](docs/LAUNCH.md) (route to the App Store and Google Play) |
+| `main.py`, `requirements*.txt` | Start script and Python dependencies |
 
-## Tests
+## Challenges
 
-```
-pip install -r requirements-dev.txt
-python -m pytest
-```
+- **No hardware to test against.** We wrote the virtual meter first, with fault injection (split frames, flipped bits,
+  dropped links, reboots), and a test for every single-bit corruption of a frame.
+- **Never losing a reading.** Our first sync acknowledged the highest reading received, which would have deleted one lost
+  to a corrupt frame. The app now acknowledges only up to the first gap and asks again.
+- **Alerts that cried wolf.** On long, noisy histories a value hovering at a threshold re-alerted every week. Hysteresis
+  and a latch fixed it; the 1000-day scenario now raises exactly three alerts.
+- **Readings exactly on the limit.** 2.4512 sits on 2.45, so we compare the rounded value and test the boundary.
+- **A diagnostic tool is not a consumer app.** Early screens exposed simulator controls and raw numbers. We rebuilt them
+  as a quiet monitoring app and moved everything technical behind a hidden switch.
 
-They cover the byte-exact protocol examples, frame parsing under splits, merges and every single-bit corruption, the maths
-and the legal-limit boundary, the alert rules, the simulator scenarios, storage limits, multiple vehicles and database
-upgrades, pairing, and the HTTP API.
+## What is next
+
+Build the meter and run it over real Bluetooth, then calibrate against a reference opacimeter (an infrared LED does not
+match the green light of the legal test method). After that: limits per vehicle category and emission norm, a native
+Android and iOS app (route in [docs/LAUNCH.md](docs/LAUNCH.md)), a service report to share with a mechanic, and regional
+languages.
 
 ## Limits
 
-This is a prototype. The meter is not built, so no real reading has been taken, and the infrared LED will need calibrating
-against a reference opacimeter. Alert thresholds are placeholders until there is real data. The 2.45 m⁻¹ limit is for one
-vehicle class. SootAble does not replace a PUC certificate, and works on diesel exhaust only. More in
-[docs/PROJECT.md](docs/PROJECT.md).
+This is a prototype. No real reading has been taken. Alert thresholds are placeholders until there is real data, and the
+2.45 m⁻¹ limit is for one vehicle class. SootAble does not replace a PUC certificate, and works on diesel exhaust only.
 
 ## Credits and AI-usage disclosure
 
 Generative AI was used, as the rules require us to disclose: we used Claude (Anthropic) through Claude Code to help plan
-the project and write the code, tests and documentation. The product idea, the specification, the choice of SDG and the
-design direction are the team's.
+the project and write the code, tests and documentation. The product idea, the specification, the CAD design, the choice
+of SDG and the design direction are the team's.
 
-Open-source software: FastAPI, Uvicorn, Pydantic, SQLite, pytest, HTTPX, three.js. Fonts, bundled for offline use: Barlow,
-Barlow Condensed and IBM Plex Mono (SIL Open Font License), Clash Display (Fontshare Free Font License). The legal limit
-(2.45 m⁻¹, 65 Hartridge units) is the CMVR limit named in our specification.
+Open-source software: FastAPI, Uvicorn, SQLite, three.js, pytest, HTTPX. Fonts, bundled for offline use: Barlow, Barlow
+Condensed and IBM Plex Mono (SIL Open Font License), Clash Display (Fontshare Free Font License).

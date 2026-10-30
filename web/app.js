@@ -25,6 +25,7 @@ const buzz = (pattern = 8) => { try { if (navigator.vibrate) navigator.vibrate(p
 const localDay = (d = new Date()) => d.toLocaleDateString("en-CA");
 const fadeIn = (el) => { if (el && el.animate) el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 160, easing: "ease-out" }); };
 
+/* ===================== app state: what is on screen right now ===================== */
 let S = null;            // latest state from the server
 let tab = session.get("sootable-tab", "home");
 let range = [30, 365, 1000].includes(Number(store.get("sootable-range"))) ? Number(store.get("sootable-range")) : 30;   // chart range in days
@@ -40,6 +41,7 @@ let restoring = true;    // the first screen after a reload goes back to where i
 let measuring = false;   // a reading is in progress, so background updates stay out of the way
 
 let online = true;
+/* The server is local, so "offline" means the app cannot reach it. Show a banner instead of failing. */
 function setOnline(ok) {
   if (ok === online) return;
   online = ok;
@@ -48,6 +50,7 @@ function setOnline(ok) {
   if (ok && S) pollState();   // back online: catch up on whatever changed
 }
 
+/* One place for every call to the backend; keeps the online/offline flag up to date. */
 async function api(path, method = "GET", body) {
   let res;
   try {
@@ -65,6 +68,7 @@ async function api(path, method = "GET", body) {
   return res.json();
 }
 
+/* ===================== icons and vehicle drawings (inline SVG, no image files) ===================== */
 const ICON = {
   home: '<path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/>',
   trend: '<path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/>',
@@ -99,6 +103,7 @@ const ART = {
 const art = (kind, cls = "") => `<svg class="${cls}" viewBox="0 0 120 60" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true">${ART[kind] || ART.car}</svg>`;
 
 /* ===================== wording ===================== */
+/* ===================== wording: status bands, alerts, dates ===================== */
 const BAND_WORD = { OK: "Good", WATCH: "Close to limit", OVER: "Over limit" };
 function band(k, limit) {
   if (k === null || k === undefined) return null;
@@ -144,6 +149,7 @@ const fmtSpan = (days) => (days < 14 ? `${days} days` : days < 60 ? `${Math.roun
 const manyVehicles = () => S && S.vehicles && S.vehicles.length > 1;
 
 /* ===================== toasts ===================== */
+/* ===================== feedback: toasts, notifications, bottom sheets ===================== */
 function toast(message, { title = "", tone = "", action = null, ms = 6000 } = {}) {
   for (const old of $("#toasts").children) if (old.textContent.includes(message)) return;   // never stack the same message
   const t = document.createElement("div");
@@ -249,6 +255,7 @@ function sheetAction(name) {
 }
 
 /* ===================== shell and routing ===================== */
+/* ===================== navigation: tabs, app bar, remembered position ===================== */
 function setState(s) {
   S = s;
   trendCache = {};
@@ -300,6 +307,7 @@ document.addEventListener("click", (e) => {
 });
 
 /* ===================== vehicles ===================== */
+/* ===================== vehicles: switch, add, change type ===================== */
 let newKind = "car";
 
 function kindTiles(attr, selected, small = false) {
@@ -353,6 +361,7 @@ async function selectVehicle(id, openTab = null) {
 
 /* ===================== Home ===================== */
 /** The scale: a ruler with the legal limit marked on it, like the scale on an opacimeter. */
+/* ===================== Home: the ruler scale, tiles, outlook and trend chart ===================== */
 function drawScale(box, value, limit, animate) {
   const W = 320, L = 4, R = 316, y0 = 40;
   const max = Math.ceil(Math.max(3, limit * 1.3, (value || 0) * 1.08) * 2) / 2;
@@ -515,6 +524,7 @@ function drawChart(wrap, data, limit) {
 }
 
 /* ===================== History ===================== */
+/* ===================== History, Alerts and Settings tabs ===================== */
 async function renderHistory(view) {
   view.innerHTML = `<div class="screen-title"><h2>History</h2><p class="muted small">${esc(S.vehicle.name)}</p></div><div id="hist"></div>`;
   if (!historyData) historyData = await api("/api/history");
@@ -636,6 +646,7 @@ function openDeviceSheet() {
     <div class="row" style="margin-top:20px"><button class="btn block" data-sheet="close">Close</button><button class="btn block primary" data-sheet="sync">Sync now</button></div>`);
 }
 
+/* ===================== syncing with the meter ===================== */
 async function doSync() {
   if (!S.meters_paired) { startPairing(); return; }   // no vehicle has a meter yet
   try {
@@ -645,6 +656,7 @@ async function doSync() {
   } catch (e) { toast(online ? "Could not reach the meter." : "Can't reach SootAble.", { tone: "error" }); }
 }
 
+/* Developer-only: take a reading right now. In normal use the meter does this once a day by itself. */
 function measureOpen() {
   if (!S.device.paired) { toast(`Connect a meter to ${S.vehicle.name} first.`, { ms: 2500 }); startPairing(); return; }
   openSheet(`<h2>Take a reading</h2><p class="muted small">${esc(S.vehicle.name)} &middot; ${esc(S.device.name)}</p>
@@ -751,6 +763,7 @@ document.addEventListener("click", async (e) => {
 });
 
 /* ===================== first run: a plain screen per question ===================== */
+/* ===================== first run: welcome, vehicle type, name, find the meter ===================== */
 const STEPS = 4;   // welcome, vehicle type, name, meter
 const freshOb = (extra = {}) => ({ step: 0, kind: null, name: "", pair: "idle", devices: [], chosen: null, pairOnly: false, vehicleId: null, vehicleName: "", ...extra });
 let ob = freshOb();
@@ -917,6 +930,7 @@ async function finishOnboarding(sample) {
 }
 
 /* ===================== developer tools (hidden) ===================== */
+/* ===================== developer tools: scenarios and the raw Bluetooth bytes (hidden by default) ===================== */
 let inspectorLast = 0;
 async function renderDev(view) {
   const names = await api("/api/scenarios");
@@ -982,6 +996,7 @@ setInterval(tickClock, 20000);
 
 /* ===================== staying current ===================== */
 /** Re-read the state and redraw if something changed (a sync, a new day, the data being cleared elsewhere). */
+/* ===================== staying current: poll the server, sync on open and every few minutes ===================== */
 let polling = false;
 async function pollState() {
   if (polling || !S || document.hidden || measuring) return;
@@ -1050,6 +1065,7 @@ addEventListener("popstate", () => {
 });
 
 /* ===================== install (Add to Home screen) ===================== */
+/* ===================== installing the app to the home screen ===================== */
 let installEvent = null;
 addEventListener("beforeinstallprompt", (e) => { e.preventDefault(); installEvent = e; if (S && tab === "settings") refresh(); });
 addEventListener("appinstalled", () => { installEvent = null; if (S && tab === "settings") refresh(); });
@@ -1071,6 +1087,7 @@ addEventListener("unhandledrejection", (e) => {
 /* ===================== start ===================== */
 const hideBoot = () => { const b = $("#boot"); if (b) { b.classList.add("gone"); setTimeout(() => b.remove(), 260); } };
 
+/* ===================== start-up ===================== */
 async function init() {
   try {
     setState(await api("/api/state"));
