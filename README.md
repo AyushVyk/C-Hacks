@@ -115,17 +115,7 @@ three.js for the 3D demo. The maths and alert rules are pure functions with no I
 | `docs/` | [PROJECT.md](docs/PROJECT.md) (problem, design decisions, limits) and [LAUNCH.md](docs/LAUNCH.md) (route to the App Store and Google Play) |
 | `main.py`, `requirements*.txt` | Start script and Python dependencies |
 
-## Challenges
 
-- **No hardware to test against.** We wrote the virtual meter first, with fault injection (split frames, flipped bits,
-  dropped links, reboots), and a test for every single-bit corruption of a frame.
-- **Never losing a reading.** Our first sync acknowledged the highest reading received, which would have deleted one lost
-  to a corrupt frame. The app now acknowledges only up to the first gap and asks again.
-- **Alerts that cried wolf.** On long, noisy histories a value hovering at a threshold re-alerted every week. Hysteresis
-  and a latch fixed it; the 1000-day scenario now raises exactly three alerts.
-- **Readings exactly on the limit.** 2.4512 sits on 2.45, so we compare the rounded value and test the boundary.
-- **A diagnostic tool is not a consumer app.** Early screens exposed simulator controls and raw numbers. We rebuilt them
-  as a quiet monitoring app and moved everything technical behind a hidden switch.
 
 ## What is next
 
@@ -141,8 +131,8 @@ This is a prototype. No real reading has been taken. Alert thresholds are placeh
 
 ## Credits and AI-usage disclosure
 
-Generative AI was used, as the rules require us to disclose: we used Claude (Anthropic) through Claude Code to help plan
-the project and write the code, tests and documentation. The product idea, the specification, the CAD design, the choice
+Generative AI was used: we used Claude (Anthropic) through Claude Code to help plan
+the project and write the code, tests and documentation with human-in-the-loop to verify. The product idea, the specification, the CAD design, the choice
 of SDG and the design direction are the team's.
 
 Open-source software: FastAPI, Uvicorn, SQLite, three.js, pytest, HTTPX. Fonts, bundled for offline use: Barlow, Barlow
