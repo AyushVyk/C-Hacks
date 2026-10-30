@@ -45,7 +45,7 @@ cloud), the sensible route is to move that logic **onto the phone** and wrap the
 4. **Bluetooth:** replace the simulated transport with a BLE plugin (for example `@capacitor-community/bluetooth-le`).
    The frame protocol is already byte-exact, only the transport class changes. This is where the real hardware comes in:
    the HM-10 in the design is a Bluetooth Low Energy module, which both platforms can use, but it only forwards 20-byte
-   serial chunks; an ESP32 (planned replacement for the Nano and HM-10) also gives proper pairing and firmware updates.
+   serial chunks; an ESP32 (a possible later replacement for the Nano and HM-10, with Bluetooth built in) would also give proper pairing and firmware updates.
 5. **Native extras:** local notifications for the daily reminder, a share sheet for the CSV export, the real app icon and
    splash screen.
 

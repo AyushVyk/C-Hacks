@@ -11,7 +11,7 @@ C://hacks 2026 · App & Web Engineering (Advanced) · **UN SDG 13: Climate Actio
 | What it is | A sensor unit with a fan, a heat-resistant pipe and a car mount, about Rs. 500 in parts | A phone app with a Python backend |
 | What it does | Draws in exhaust, measures how much infrared light the smoke blocks, takes a clean-air reference | Turns readings into a smoke level, tracks the trend, forecasts, raises alerts |
 | Status | Designed in CAD, shown as a 3D simulator | Working, with a virtual meter standing in for the real one |
-| Try it | [Live 3D demo](https://ayushvyk.github.io/C-Hacks/) | [Run the app](#run-the-app) |
+| Try it | [Live 3D demo](https://ayushvyk.github.io/C-Hacks/hardware/) | [Run the app](#run-the-app) |
 
 <p>
 <img src="docs/screenshots/07-hardware-demo.png" width="560" alt="The 3D meter simulator">
@@ -34,7 +34,7 @@ nobody measures often enough, and engines degrade slowly, so a single reading sa
 
 The meter is a short pipe fitted under the tailpipe outlet. A fan pulls exhaust through it. A CNY70 reflective infrared
 sensor sits in the pipe: it sends light across and reads how much comes back, and the beam crosses the smoke twice (2 × 26
-mm). More soot means less light returns. An ESP32 reads the sensor and sends the result to the phone over Bluetooth.
+mm). More soot means less light returns. An Arduino Nano reads the sensor and an HM-10 Bluetooth module sends the result to the phone.
 
 Each daily measurement is two steps: read the smoky air, then flush the pipe with clean air and read again as a
 reference (`i0`). The phone computes the opacity coefficient, the quantity the legal limit is written in:
@@ -48,7 +48,7 @@ slow drift in the LED and sensor cancels out.
 
 **The meter has not been built.** It exists as a CAD model, so the [3D simulator](hardware/index.html) is how we show it:
 drag to orbit, change the smoke in the exhaust, flush the pipe, and watch the sensor reading, opacity and k change, with
-the phone's view and the ESP32's serial output beside it. It runs offline too (the 3D library is bundled), either from the
+the phone's view and the Nano's serial output beside it. It runs offline too (the 3D library is bundled), either from the
 live link above, by opening `hardware/index.html`, or at `/hardware/` when the app is running.
 
 ## The app
@@ -75,7 +75,7 @@ through a simulated Bluetooth link. The app's parser, checksum and sync logic ca
 a real meter means replacing one transport class. **The readings in the demo are generated, not measured.**
 
 ```
-meter (CNY70 + ESP32) ──bytes──▶ Bluetooth link ──20-byte chunks──▶ phone session (parse, CRC, sync)
+meter (CNY70 + Nano + HM-10) ──bytes──▶ Bluetooth link ──20-byte chunks──▶ phone session (parse, CRC, sync)
    [virtual device today]                                                    │
               phone UI (HTML/JS) ◀── JSON ── FastAPI ◀── analytics ◀── SQLite (local)
 ```
@@ -108,7 +108,7 @@ three.js for the 3D demo. The maths and alert rules are pure functions with no I
 
 | Path | What it is |
 |---|---|
-| `hardware/` | The 3D meter simulator (published to GitHub Pages) |
+| `hardware/` | The 3D meter simulator (also served by GitHub Pages) |
 | `sootable/` | Backend: protocol (`crc8.py`, `frame.py`), maths and rules (`k.py`, `daily.py`, `alerts.py`), storage (`store.py`), sync (`session.py`), virtual meter (`device_sim.py`, `link.py`, `scenarios.py`), analytics (`engine.py`), API (`server.py`) |
 | `web/` | The phone UI: `index.html`, `style.css`, `app.js`, service worker, fonts, icons |
 | `tests/` | 94 automated tests (`pip install -r requirements-dev.txt`, then `python -m pytest`) |

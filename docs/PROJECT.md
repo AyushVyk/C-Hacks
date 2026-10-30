@@ -104,7 +104,7 @@ can move unchanged into a native phone app.
 
 ## Future improvements
 
-- Build the meter and connect it over real Bluetooth (an ESP32 would replace the Nano and the HM-10), then calibrate
+- Build the meter and connect it over real Bluetooth (a later revision could swap the Nano and HM-10 for an ESP32), then calibrate
   against a reference opacimeter.
 - A native Android and iOS app reusing the domain logic, with push reminders and background sync (route and store
   requirements in `LAUNCH.md`).
