@@ -36,11 +36,16 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 .stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 .stat{border-top:2px solid var(--line);padding-top:6px}.stat span{display:block;font-size:12px;color:var(--mute)}
 .stat b{font:500 22px var(--f-mono);font-variant-numeric:tabular-nums}
-.phone{border:1px solid var(--line);border-radius:18px;padding:14px;background:var(--bg);display:grid;gap:10px}
-.bt{font:500 11px var(--f-mono);color:var(--mute);display:flex;justify-content:space-between}
-.big{font:700 54px/1 var(--f-display);font-variant-numeric:tabular-nums}
-.bar{height:10px;background:var(--line);border-radius:5px;overflow:hidden}.bar i{display:block;height:100%;width:0;background:var(--ok);transition:width .3s,background .3s}
-.verdict{font:600 15px var(--f-display);text-transform:uppercase;letter-spacing:.08em}
+.phone{width:min(100%,260px);margin:0 auto;border:1px solid var(--line);border-radius:26px;padding:16px 16px 18px;background:var(--bg);display:grid;gap:12px;box-shadow:0 1px 0 var(--line)}
+.bt{font:500 11px var(--f-mono);color:var(--mute);display:flex;justify-content:space-between;align-items:center}
+.bt i{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--ok);margin-right:6px}
+.plabel{font:600 11px var(--f-display);text-transform:uppercase;letter-spacing:.12em;color:var(--mute)}
+.big{font:700 58px/1 var(--f-display);font-variant-numeric:tabular-nums;display:flex;align-items:baseline;gap:4px}.big small{font:500 18px var(--f-body);color:var(--mute)}
+.verdict{justify-self:start;font:600 12px var(--f-display);text-transform:uppercase;letter-spacing:.08em;padding:5px 11px;border-radius:99px;background:var(--panel);border:1px solid currentColor}
+.scale{position:relative;height:8px;border-radius:4px;display:flex;gap:2px;margin-top:4px}
+.scale span{height:100%}.scale span:nth-child(1){flex:65.3;background:var(--ok);border-radius:4px 0 0 4px}.scale span:nth-child(2){flex:16.3;background:var(--warn)}.scale span:nth-child(3){flex:18.4;background:var(--bad);border-radius:0 4px 4px 0}
+.scale i{position:absolute;top:-7px;width:0;height:0;margin-left:-6px;border:6px solid transparent;border-top:8px solid var(--ink);border-bottom:0;transition:left .3s}
+.ticks{display:flex;font:500 10px var(--f-mono);color:var(--mute);position:relative;height:12px}.ticks span{position:absolute;transform:translateX(-50%);white-space:nowrap}
 .note{font-size:12px;color:var(--mute);line-height:1.5;margin:0}
 pre{margin:0;font:400 12px/1.6 var(--f-mono);background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:10px;height:150px;overflow:hidden}
 </style>
@@ -54,7 +59,7 @@ pre{margin:0;font:400 12px/1.6 var(--f-mono);background:var(--bg);border:1px sol
   <div class="ctrl">
    <div class="row"><label for="smoke">Smoke in exhaust <output id="smokeOut"></output></label><input id="smoke" type="range" min="0" max="100" value="45"></div>
    <div class="btns" id="presets" role="group" aria-label="Exhaust condition presets">
-    <button data-v="2">Healthy petrol</button><button data-v="25">Worn engine</button><button data-v="55">Diesel, due service</button><button data-v="90">Heavy black smoke</button></div>
+    <button data-v="2">Healthy petrol</button><button data-v="7">Worn engine</button><button data-v="10">Diesel, due service</button><button data-v="90">Heavy black smoke</button></div>
    <div class="btns"><button id="fan" aria-pressed="true">Fan: on</button><button id="lab" aria-pressed="true">Labels: on</button><button id="carbtn">Car: ghost</button><button id="vw">View: whole car</button><button id="vfan">View: fan outlet</button><button id="flush" aria-pressed="false">Reverse flush: off</button><button id="zero">Zero in clean air</button><button id="cut" aria-pressed="true">See-through pipe: on</button></div>
   </div>
  </section>
@@ -65,8 +70,8 @@ pre{margin:0;font:400 12px/1.6 var(--f-mono);background:var(--bg);border:1px sol
     <div class="stat"><span>Opacity</span><b id="op">0%</b></div><div class="stat"><span>k (absorption)</span><b id="k">0.0 m⁻¹</b></div></div>
    <p class="note" style="margin-top:10px">The CNY70 sends IR across the pipe and reads what comes back, so the beam crosses the smoke twice (2 × 26 mm). More soot, less light returns.</p></section>
   <section class="card"><h2>Phone over Bluetooth</h2>
-   <div class="phone"><div class="bt"><span>● SootSensor</span><span>live</span></div><div class="big" id="pbig">0%</div><div class="bar"><i id="pbar"></i></div><div class="verdict" id="verdict">Pass</div></div>
-   <p class="note" style="margin-top:10px">Pass, watch and fail bands are demo values, not a legal limit.</p></section>
+   <div class="phone"><div class="bt"><span><i></i>SootAble</span><span>live</span></div><div class="plabel">Smoke level</div><div class="big"><span id="pbig">0</span><small>m⁻¹</small></div><div class="verdict" id="verdict">Good</div><div class="scale" aria-hidden="true"><span></span><span></span><span></span><i id="pmark" style="left:0"></i></div><div class="ticks" aria-hidden="true"><span style="left:0;transform:none">0</span><span style="left:33.3%">1</span><span style="left:66.7%">2</span><span style="left:81.7%;color:var(--bad)">limit 2.45</span><span style="left:100%;transform:translateX(-100%)">3</span></div></div>
+   <p class="note" style="margin-top:10px">The phone applies the same rule as the app: Good below 80% of the 2.45 m⁻¹ legal limit, Close to limit up to it, Over limit above it. Because this chamber is only 52 mm long, the limit is reached at just 12% opacity.</p></section>
  </aside>
 </div>
 <section class="card"><h2>Arduino Nano serial output</h2><pre id="log"></pre></section>
@@ -174,7 +179,7 @@ function place(){if(goal){var k=.08;az+=(goal.az-az)*k;el+=(goal.el-el)*k;dist+=
   cam.position.set(tgt.x+dist*Math.cos(el)*Math.sin(az),tgt.y+dist*Math.sin(el),tgt.z+dist*Math.cos(el)*Math.cos(az));cam.lookAt(tgt)}
 window.addEventListener('resize',function(){W=vp.clientWidth;H=vp.clientHeight;renderer.setSize(W,H);cam.aspect=W/H;cam.updateProjectionMatrix()});
 // sim
-var prevSmoke=45,flushing=false,flushStart=0,smoke=45,fan=true,conc=0,L=0.052,I0=880,zeroI=I0,labelsOn=true,cut=true;
+var LIMIT=2.45,prevSmoke=45,flushing=false,flushStart=0,smoke=45,fan=true,conc=0,L=0.052,I0=880,zeroI=I0,labelsOn=true,cut=true;
 function kTrue(c){return c/100*30}
 function setSmoke(v){smoke=+v;$('smoke').value=v;$('smokeOut').textContent=v+'%'}
 $('smoke').addEventListener('input',function(e){setSmoke(e.target.value)});
@@ -201,9 +206,9 @@ function endFlush(){flushing=false;var b=$('flush');b.setAttribute('aria-pressed
 var lines=[];function log(s){lines.push(s);if(lines.length>8)lines.shift();$('log').textContent=lines.join('\n')}
 function sample(){var raw=Math.round(reading()),r=Math.max(.001,raw/zeroI),op=Math.max(0,Math.min(100,(1-r)*100)),k=Math.max(0,-Math.log(Math.min(r,1))/L);
   $('adc').textContent=raw;$('light').textContent=Math.round(Math.min(r,1)*100)+'%';$('op').textContent=op.toFixed(1)+'%';$('k').textContent=k.toFixed(1)+' m⁻¹';
-  $('pbig').textContent=op.toFixed(0)+'%';$('pbar').style.width=Math.min(100,op*1.6)+'%';
-  var v,c;if(op<25){v='Pass';c='--ok'}else if(op<50){v='Watch';c='--warn'}else{v='Fail: service needed';c='--bad'}
-  $('pbar').style.background='var('+c+')';$('verdict').textContent=v;$('verdict').style.color='var('+c+')';
+  var kr=Math.round(k*100)/100;$('pbig').textContent=kr.toFixed(2);$('pmark').style.left=Math.min(100,k/3*100)+'%';
+  var v,c;if(kr<LIMIT*.8){v='Good';c='--ok'}else if(kr<=LIMIT){v='Close to limit';c='--warn'}else{v='Over limit';c='--bad'}
+  $('verdict').textContent=v;$('verdict').style.color='var('+c+')';
   log('opacity='+op.toFixed(1)+'% k='+k.toFixed(1)+' raw='+raw+(fan?'':' FAN-OFF'))}
 setSmoke(45);
 var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches,t0=performance.now(),last=0,tmp=new THREE.Vector3(),sp=0;
