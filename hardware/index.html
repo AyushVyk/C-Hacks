@@ -57,9 +57,9 @@ pre{margin:0;font:400 12px/1.6 var(--f-mono);background:var(--bg);border:1px sol
   <h2>Copy of Main Project</h2>
   <div id="vp"><div id="lbls"></div><div id="badge" hidden style="position:absolute;right:10px;top:10px;font:600 13px var(--f-display);letter-spacing:.08em;text-transform:uppercase;background:var(--accent);color:#fff;border-radius:3px;padding:4px 8px">Reverse flush on: click the button again to let the exhaust back in</div><div id="tip">drag to orbit · scroll to zoom</div></div>
   <div class="ctrl">
-   <div class="row"><label for="smoke">Smoke in exhaust <output id="smokeOut"></output></label><input id="smoke" type="range" min="0" max="100" value="4"></div>
+   <div class="row"><label for="smoke">Smoke in exhaust <output id="smokeOut"></output></label><input id="smoke" type="range" min="0" max="100" value="25"></div>
    <div class="btns" id="presets" role="group" aria-label="Exhaust condition presets">
-    <button data-v="2">Healthy petrol</button><button data-v="7">Worn engine</button><button data-v="10">Diesel, due service</button><button data-v="90">Heavy black smoke</button></div>
+    <button data-v="8">Healthy petrol</button><button data-v="57">Worn engine</button><button data-v="75">Diesel, due service</button><button data-v="95">Heavy black smoke</button></div>
    <div class="btns"><button id="fan" aria-pressed="true">Fan: on</button><button id="lab" aria-pressed="true">Labels: on</button><button id="carbtn">Car: ghost</button><button id="vw">View: whole car</button><button id="vfan">View: fan outlet</button><button id="flush" aria-pressed="false">Reverse flush: off</button><button id="zero">Zero in clean air</button><button id="cut" aria-pressed="true">See-through pipe: on</button></div>
   </div>
  </section>
@@ -179,8 +179,8 @@ function place(){if(goal){var k=.08;az+=(goal.az-az)*k;el+=(goal.el-el)*k;dist+=
   cam.position.set(tgt.x+dist*Math.cos(el)*Math.sin(az),tgt.y+dist*Math.sin(el),tgt.z+dist*Math.cos(el)*Math.cos(az));cam.lookAt(tgt)}
 window.addEventListener('resize',function(){W=vp.clientWidth;H=vp.clientHeight;renderer.setSize(W,H);cam.aspect=W/H;cam.updateProjectionMatrix()});
 // sim
-var LIMIT=2.45,prevSmoke=4,flushing=false,flushStart=0,smoke=4,fan=true,conc=0,L=0.052,I0=880,zeroI=I0,labelsOn=true,cut=true;
-function kTrue(c){return c/100*30}
+var LIMIT=2.45,prevSmoke=25,flushing=false,flushStart=0,smoke=25,fan=true,conc=0,L=0.052,I0=880,zeroI=I0,labelsOn=true,cut=true;
+function kTrue(c){return c/100*4}
 function setSmoke(v){smoke=+v;$('smoke').value=v;$('smokeOut').textContent=v+'%'}
 $('smoke').addEventListener('input',function(e){setSmoke(e.target.value)});
 document.querySelectorAll('#presets button').forEach(function(b){b.addEventListener('click',function(){setSmoke(b.dataset.v)})});
@@ -210,7 +210,7 @@ function sample(){var raw=Math.round(reading()),r=Math.max(.001,raw/zeroI),op=Ma
   var v,c;if(kr<LIMIT*.8){v='Good';c='--ok'}else if(kr<=LIMIT){v='Close to limit';c='--warn'}else{v='Over limit';c='--bad'}
   $('verdict').textContent=v;$('verdict').style.color='var('+c+')';
   log('opacity='+op.toFixed(1)+'% k='+k.toFixed(1)+' raw='+raw+(fan?'':' FAN-OFF'))}
-setSmoke(4);
+setSmoke(25);
 var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches,t0=performance.now(),last=0,tmp=new THREE.Vector3(),sp=0;
 function frame(now){var dt=Math.min(.05,(now-t0)/1000);t0=now;
   conc+=((fan&&!flushing?smoke:0)-conc)*(flushing?2.2:(fan?.8:.15))*dt;
