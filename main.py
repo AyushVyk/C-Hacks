@@ -5,9 +5,12 @@ Settings (environment variables, all optional):
                  same Wi-Fi open the app (the address to type is printed).
   SOOTABLE_PORT  port, default 8000.
   SOOTABLE_DB    where the local database lives, default ./data/sootable.db
+  SOOTABLE_NO_BROWSER  set to 1 to stop it opening the app in your browser when it starts.
 """
 import os
 import socket
+import threading
+import webbrowser
 
 import uvicorn
 
@@ -30,4 +33,7 @@ if __name__ == "__main__":
     if host == "0.0.0.0":
         print(f"\n  On your phone (same Wi-Fi): http://{lan_address()}:{port}")
     print(f"  On this computer:           http://127.0.0.1:{port}\n")
+    if not os.environ.get("SOOTABLE_NO_BROWSER"):
+        # open the app a moment after the server is up, so there is nothing to type
+        threading.Timer(1.5, webbrowser.open, args=[f"http://127.0.0.1:{port}"]).start()
     uvicorn.run("sootable.server:app", host=host, port=port)

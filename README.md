@@ -82,18 +82,23 @@ meter (CNY70 + Nano + HM-10) ──bytes──▶ Bluetooth link ──20-byte c
 
 ## Run the app
 
-Needs Python 3.10 or newer.
+Needs Python 3.10 or newer ([python.org](https://www.python.org/downloads/)). Get the code with
+`git clone https://github.com/AyushVyk/Maxwells-Silver-Hammer-C-HACKS.git` (or **Code → Download ZIP** on GitHub), then:
+
+- **Windows:** double-click `run.bat`.
+- **macOS / Linux:** run `./run.sh` in a terminal.
+
+The first run sets up its own packages (about a minute), then starts the app and opens it in your browser. Later runs start
+at once. If you would rather do it by hand:
 
 ```
-git clone https://github.com/AyushVyk/Maxwells-Silver-Hammer-C-HACKS.git
-cd Maxwells-Silver-Hammer-C-HACKS
 python -m venv .venv
 .venv\Scripts\activate            # macOS / Linux: source .venv/bin/activate
 pip install -r requirements.txt
 python main.py
 ```
 
-Open **http://127.0.0.1:8000**. On a laptop it shows inside a phone-sized frame. The first run adds a vehicle and looks for
+It lives at **http://127.0.0.1:8000** (it opens by itself). On a laptop it shows inside a phone-sized frame. The first run adds a vehicle and looks for
 its meter; the search finds three virtual meters, and **No meter? Use demo data** loads months of example readings (a
 healthy engine or one wearing out). To try it on a real phone on the same Wi-Fi, start it with `SOOTABLE_HOST=0.0.0.0`
 (PowerShell: `$env:SOOTABLE_HOST = "0.0.0.0"`), open the address it prints, and use *Add to Home screen*.
@@ -113,7 +118,7 @@ three.js for the 3D demo. The maths and alert rules are pure functions with no I
 | `web/` | The phone UI: `index.html`, `style.css`, `app.js`, service worker, fonts, icons |
 | `tests/` | 94 automated tests (`pip install -r requirements-dev.txt`, then `python -m pytest`) |
 | `docs/` | [PROJECT.md](docs/PROJECT.md) (problem, design decisions, limits) and [LAUNCH.md](docs/LAUNCH.md) (route to the App Store and Google Play) |
-| `main.py`, `requirements*.txt` | Start script and Python dependencies |
+| `run.bat`, `run.sh`, `main.py`, `requirements*.txt` | One-click launchers, the start script and the Python dependencies |
 
 
 
