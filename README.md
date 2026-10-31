@@ -11,7 +11,7 @@ C://hacks 2026 · App & Web Engineering (Advanced) · **UN SDG 13: Climate Actio
 | What it is | A sensor unit with a fan, a heat-resistant pipe and a car mount, about Rs. 500 in parts | A phone app with a Python backend |
 | What it does | Draws in exhaust, measures how much infrared light the smoke blocks, takes a clean-air reference | Turns readings into a smoke level, tracks the trend, forecasts, raises alerts |
 | Status | Designed in CAD, shown as a 3D simulator | Working, with a virtual meter standing in for the real one |
-| Try it | [Live 3D demo](https://ayushvyk.github.io/C-Hacks/hardware/) | [Run the app](#run-the-app) |
+| Try it | [Live 3D demo](https://ayushvyk.github.io/Maxwells-Silver-Hammer-C-HACKS/hardware/) | [Run the app](#run-the-app) |
 
 <p>
 <img src="docs/screenshots/07-hardware-demo.png" width="560" alt="The 3D meter simulator">
@@ -85,8 +85,8 @@ meter (CNY70 + Nano + HM-10) ──bytes──▶ Bluetooth link ──20-byte c
 Needs Python 3.10 or newer.
 
 ```
-git clone https://github.com/AyushVyk/C-Hacks.git
-cd C-Hacks
+git clone https://github.com/AyushVyk/Maxwells-Silver-Hammer-C-HACKS.git
+cd Maxwells-Silver-Hammer-C-HACKS
 python -m venv .venv
 .venv\Scripts\activate            # macOS / Linux: source .venv/bin/activate
 pip install -r requirements.txt
