@@ -82,21 +82,77 @@ meter (CNY70 + Nano + HM-10) ──bytes──▶ Bluetooth link ──20-byte c
 
 ## Run the app
 
-Needs Python 3.10 or newer ([python.org](https://www.python.org/downloads/)). Get the code with
-`git clone https://github.com/AyushVyk/Maxwells-Silver-Hammer-C-HACKS.git` (or **Code → Download ZIP** on GitHub), then:
+The shortest route, on any computer: **Code → Download ZIP** at the top of this GitHub page, unzip it, then
 
 - **Windows:** double-click `run.bat`.
-- **macOS / Linux:** run `./run.sh` in a terminal.
+- **macOS / Linux:** open a terminal in the unzipped folder and run `./run.sh`.
 
-The first run sets up its own packages (about a minute), then starts the app and opens it in your browser. Later runs start
-at once. If you would rather do it by hand:
+The first run sets up everything it needs (about a minute), then starts the app and opens it in your browser. Later runs
+start at once. On Windows, `run.bat` even installs Python for you if the PC has none (it uses `winget`, which is built into
+Windows 10 and 11). If it says to run it again after installing Python, just do.
+
+<details>
+<summary><b>Starting from a blank computer, or want to use git? Copy-paste steps for each system</b></summary>
+
+Paste each block into a terminal (on Windows: PowerShell) and press Enter. You need Python 3.10 or newer and, only if you
+want `git clone` instead of the ZIP, git.
+
+**Windows 10 / 11.** Installs git and Python, then close the terminal and open a new one so they are found:
+
+```
+winget install -e --id Git.Git
+winget install -e --id Python.Python.3.12
+```
+
+Then, in the new terminal:
+
+```
+git clone https://github.com/AyushVyk/Maxwells-Silver-Hammer-C-HACKS.git
+cd Maxwells-Silver-Hammer-C-HACKS
+.\run.bat
+```
+
+**macOS.** Git comes with Apple's command line tools (a window pops up, click Install and wait). Python 3.10+ is not
+included: download the installer from [python.org/downloads](https://www.python.org/downloads/) and run it, or if you use
+Homebrew, `brew install python`.
+
+```
+xcode-select --install
+```
+
+Then, in a new terminal:
+
+```
+git clone https://github.com/AyushVyk/Maxwells-Silver-Hammer-C-HACKS.git
+cd Maxwells-Silver-Hammer-C-HACKS
+./run.sh
+```
+
+**Linux (Debian / Ubuntu).**
+
+```
+sudo apt update
+sudo apt install -y git python3 python3-venv python3-pip
+git clone https://github.com/AyushVyk/Maxwells-Silver-Hammer-C-HACKS.git
+cd Maxwells-Silver-Hammer-C-HACKS
+./run.sh
+```
+
+**Doing the setup by hand** (what the launcher does for you): create a virtual environment, install the requirements, start.
 
 ```
 python -m venv .venv
-.venv\Scripts\activate            # macOS / Linux: source .venv/bin/activate
-pip install -r requirements.txt
-python main.py
 ```
+
+```
+.venv/bin/python -m pip install -r requirements.txt
+.venv/bin/python main.py
+```
+
+On Windows use `.venv\Scripts\python` in place of `.venv/bin/python`, and on macOS and Linux type `python3` instead of
+`python` in the first command.
+
+</details>
 
 It lives at **http://127.0.0.1:8000** (it opens by itself). On a laptop it shows inside a phone-sized frame. The first run adds a vehicle and looks for
 its meter; the search finds three virtual meters, and **No meter? Use demo data** loads months of example readings (a
